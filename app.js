@@ -6,7 +6,7 @@ const methodOverride = require("method-override");
 
 const mongoose = require("mongoose");
 const { log } = require("console");
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust2";
+const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 main()
   .then(() => {
     console.log("connected to DB");
@@ -60,13 +60,20 @@ app.get("/listings/:id/edit", async (req, res) => {
 });
 
 //Update Route
-//Update Route
 app.put("/listings/:id", async (req, res) => {
   const { id } = req.params;
   const updatedListing = await Listing.findByIdAndUpdate(id,req.body.listing, {
     new: true,
   });
   res.redirect(`/listings/${id}`);
+});
+
+//delete route
+app.delete("/listings/:id", async (req, res) => {
+  let { id } = req.params;
+  let deletedListing = await Listing.findByIdAndDelete(id);
+  console.log(deletedListing);
+  res.redirect("/listings");
 });
 
 app.listen("8080", (req, res) => {
