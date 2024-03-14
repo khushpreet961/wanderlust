@@ -48,10 +48,15 @@ app.get("/listings/:id", async (req, res) => {
 });
 
 // create route
-app.post("/listings", async (req, res) => {
-  const newListing = new Listing(req.body.listing);
-  await newListing.save();
-  res.redirect("/listings");
+app.post("/listings", async (req, res , next) => {
+  try{
+    const newListing = new Listing(req.body.listing);
+    await newListing.save();
+    res.redirect("/listings");
+  } catch(err){
+    next(err);
+  }
+  
 });
 
 // edit route
@@ -77,6 +82,11 @@ app.delete("/listings/:id", async (req, res) => {
   let deletedListing = await Listing.findByIdAndDelete(id);
   console.log(deletedListing);
   res.redirect("/listings");
+});
+
+// middleware (handling the async errors)
+app.use((err,req,res,next)=>{
+  res.send("somthing went wrong");
 });
 
 app.listen("8080", (req, res) => {
