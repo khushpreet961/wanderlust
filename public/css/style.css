@@ -88,6 +88,8 @@ align-items:space-evenly;
 .edit-btn{
     background-color: #fe424d !important;
     border: none !important;
+    width: fit-content !important;
+    margin-bottom: 2% !important;
 }
 /* show page */
 .show-img{

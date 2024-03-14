@@ -4,9 +4,10 @@ const Listing = require("./models/listing.js");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require('ejs-mate');
-
 const mongoose = require("mongoose");
+const ExpressError = require("./utils/ExpressError.js")
 const { log } = require("console");
+const wrapAsync = require("./utils/wrapAsync.js");
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 main()
   .then(() => {
@@ -48,16 +49,22 @@ app.get("/listings/:id", async (req, res) => {
 });
 
 // create route
-app.post("/listings", async (req, res , next) => {
-  try{
-    const newListing = new Listing(req.body.listing);
-    await newListing.save();
-    res.redirect("/listings");
-  } catch(err){
-    next(err);
-  }
-  
-});
+app.post("/listings", wrapAsync(async (req, res, next) => {
+  let {title, description, image, price, country, location} = req.body.listing;
+  const newListing = new Listing({
+      title:title,
+      description:description,
+      location:location,
+      country:country,
+      price:price,
+  });
+  newListing.image.url = image;
+  await newListing.save();
+  console.log(newListing);
+  res.redirect("/listings");
+})
+);
+ 
 
 // edit route
 
@@ -68,13 +75,21 @@ app.get("/listings/:id/edit", async (req, res) => {
 });
 
 //Update Route
-app.put("/listings/:id", async (req, res) => {
-  const { id } = req.params;
-  const updatedListing = await Listing.findByIdAndUpdate(id,req.body.listing, {
-    new: true,
-  });
+app.put("/listings/:id", async (req, res, next) => {
+  let {id} = req.params;
+  let {title, image, description, location, country, price}  = req.body.listing;
+  
+  let newL = await Listing.findByIdAndUpdate(id, {
+      title:title,
+      description:description,
+      location:location,
+      country:country,
+      price:price,
+      'image.url' :image
+  }, {new:true});
+  console.log(newL);
   res.redirect(`/listings/${id}`);
-});
+  });
 
 //delete route
 app.delete("/listings/:id", async (req, res) => {
@@ -84,9 +99,15 @@ app.delete("/listings/:id", async (req, res) => {
   res.redirect("/listings");
 });
 
+app.all("*" , (req, res, next)=>{
+  next(new ExpressError(404,"page not found"));
+})
+
+
 // middleware (handling the async errors)
-app.use((err,req,res,next)=>{
-  res.send("somthing went wrong");
+app.use((err, req , res,next)=>{
+  let (statuscode , message)= err;
+  res.status(statuscode).send(message);
 });
 
 app.listen("8080", (req, res) => {
