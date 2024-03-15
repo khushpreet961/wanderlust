@@ -32,28 +32,37 @@ app.use(express.static(path.join(__dirname,"/public")));
 app.get("/", (req, res) => {
   res.send("this is working");
 });
+// midddleware for schema
+const validateListing = (req, res, next)=>{
+  let{error} =listingSchema.validate(req.body);
+  if(error){
+    let errMSg = error.details.map((el) =>el.message).join(",");
+    throw new ExpressError(400 ,errMSg );
+  }else{
+    next();
+  }
+};
+
 //  index route
-app.get("/listings", wrapAsync(async (req, res) => {
+app.get("/listings",validateListing, wrapAsync(async (req, res) => {
   const allListings = await Listing.find({});
   res.render("./listings/index.ejs", { allListings });
 }));
 
 //   new route
-app.get("/listings/new", wrapAsync(async (req, res) => {
+app.get("/listings/new",validateListing, wrapAsync(async (req, res) => {
   await res.render("./listings/new.ejs");
 }));
 
 //show route
-app.get("/listings/:id",  wrapAsync(async (req, res) => {
+app.get("/listings/:id",validateListing,  wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("./listings/show.ejs", { listing });
 }));
 
 // create route
-app.post("/listings", wrapAsync(async (req, res, next) => {
-   let result =listingSchema.validate(req.body);
-   console.log(result);
+app.post("/listings", validateListing,wrapAsync(async (req, res, next) => {
   let {title, description, image, price, country, location} = req.body.listing;
   const newListing = new Listing({
       title:title,
@@ -72,14 +81,14 @@ app.post("/listings", wrapAsync(async (req, res, next) => {
 
 // edit route
 
-app.get("/listings/:id/edit",  wrapAsync(async (req, res) => {
+app.get("/listings/:id/edit", validateListing, wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("./listings/edit.ejs", { listing });
 }));
 
 //Update Route
-app.put("/listings/:id",  wrapAsync(async (req, res, next) => {
+app.put("/listings/:id", validateListing, wrapAsync(async (req, res, next) => {
   if(!req.body.listing){
     throw new ExpressError(400,"send a valid data");
   }
@@ -99,7 +108,7 @@ app.put("/listings/:id",  wrapAsync(async (req, res, next) => {
   }));
 
 //delete route
-app.delete("/listings/:id",  wrapAsync(async (req, res) => {
+app.delete("/listings/:id", validateListing, wrapAsync(async (req, res) => {
   let { id } = req.params;
   let deletedListing = await Listing.findByIdAndDelete(id);
   console.log(deletedListing);
