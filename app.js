@@ -8,6 +8,8 @@ const mongoose = require("mongoose");
 const ExpressError = require("./utils/ExpressError.js")
 const { log } = require("console");
 const wrapAsync = require("./utils/wrapAsync.js");
+const {listingSchema} = require("./schema.js");
+
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 main()
   .then(() => {
@@ -50,9 +52,8 @@ app.get("/listings/:id",  wrapAsync(async (req, res) => {
 
 // create route
 app.post("/listings", wrapAsync(async (req, res, next) => {
-  if(!req.body.listing){
-    throw new ExpressError(400,"send a valid data");
-  }
+   let result =listingSchema.validate(req.body);
+   console.log(result);
   let {title, description, image, price, country, location} = req.body.listing;
   const newListing = new Listing({
       title:title,
@@ -111,11 +112,10 @@ app.all("*" , (req, res, next)=>{
 
 
 // middleware (handling the async errors)
-app.use((err, req , res,next)=>{
-  let {statusCode=500 , message="something went wrong"}= err;
-  res.render("error.ejs ", {err});
-  // res.status(statusCode).send(message);
-});
+app.use((err,req,res,next)=>{
+  let{statusCode =500,message="something went wrong"}= err;
+   res.status(statusCode).render("error.ejs",{message});
+})
 
 app.listen("8080", (req, res) => {
   console.log("app is listening");
