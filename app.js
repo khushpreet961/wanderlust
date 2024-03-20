@@ -44,18 +44,18 @@ const validateListing = (req, res, next)=>{
 };
 
 //  index route
-app.get("/listings",validateListing, wrapAsync(async (req, res) => {
+app.get("/listings", wrapAsync(async (req, res) => {
   const allListings = await Listing.find({});
   res.render("./listings/index.ejs", { allListings });
 }));
 
 //   new route
-app.get("/listings/new",validateListing, wrapAsync(async (req, res) => {
+app.get("/listings/new", wrapAsync(async (req, res) => {
   await res.render("./listings/new.ejs");
 }));
 
 //show route
-app.get("/listings/:id",validateListing,  wrapAsync(async (req, res) => {
+app.get("/listings/:id",  wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("./listings/show.ejs", { listing });
@@ -81,7 +81,7 @@ app.post("/listings", validateListing,wrapAsync(async (req, res, next) => {
 
 // edit route
 
-app.get("/listings/:id/edit", validateListing, wrapAsync(async (req, res) => {
+app.get("/listings/:id/edit",  wrapAsync(async (req, res) => {
   const { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("./listings/edit.ejs", { listing });
@@ -108,7 +108,7 @@ app.put("/listings/:id", validateListing, wrapAsync(async (req, res, next) => {
   }));
 
 //delete route
-app.delete("/listings/:id", validateListing, wrapAsync(async (req, res) => {
+app.delete("/listings/:id", wrapAsync(async (req, res) => {
   let { id } = req.params;
   let deletedListing = await Listing.findByIdAndDelete(id);
   console.log(deletedListing);
