@@ -2,15 +2,15 @@
 <body>
     <div class="row mt-3">
       <div class="col-8 offset-3">
-     <h3>Listing detail</h3>
+     <h3><%= listing.title %></h3>
      </div>
      <div class="card col-6 offset-3 show-card">
        <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing-image">
        <div class="card-body">
           <p class="card-text">
-            <b> <%= listing.title %> </b><br>
+            <br>
             <%= listing.description %><br>
-            &#8377; <%= listing.price%> <br>
+            &#8377; <%= listing.price.toLocaleString("en-IN")%>/night <br>
             <%= listing.location %><br>
             <%= listing.country %>
           </p>
@@ -23,6 +23,32 @@
           <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE">
             <button  class="btn btn-dark offset-5 Delete-btn">Delete</button>
           </form>
+        </div>
+        <!-- review form -->
+        <div class="col-8 offset-3 ">
+          <hr>
+          <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+            <div class=" mb-3 mt-3">
+              <h3>Leave a Review</h3>
+            <label for="rating"  class="form-label">Rating</label>
+            <input type="range" min="1" max="5" id="rating"  class="form-range" name="review[rating]">
+            </div>
+            <div class=" mb-3 mt-3">
+              <label for="comment"  class="form-label"> Comments</label><br><br>
+              <textarea name="review[comment]" cols="30" rows="5" id="comment"   class="form-control" required></textarea>
+              <div class="invalid-feedback">please add a comment</div>
+            </div>
+            <button class="btn btn-outline-primary mb-3">submit</button>
+          </form>
+          <hr>
+          <h3>All reviews</h3>
+          <p><%= listing.reviews %></p>
+
+          <!-- <ul>
+           <% for( let review of listing.reviews ) { %> 
+            <li> comment: <%= review.comment %>, rating: <%= review.rating %></li>
+           <% } %>
+        </ul>  -->
         </div>
    </div>
 </body>

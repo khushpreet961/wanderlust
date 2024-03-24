@@ -8,7 +8,8 @@ const mongoose = require("mongoose");
 const ExpressError = require("./utils/ExpressError.js")
 const { log } = require("console");
 const wrapAsync = require("./utils/wrapAsync.js");
-const {listingSchema} = require("./schema.js");
+const {listingSchema,reviewSchema } = require("./schema.js");
+const Reviews = require("./models/review.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 main()
@@ -42,6 +43,16 @@ const validateListing = (req, res, next)=>{
     next();
   }
 };
+// middleware of serverside for review
+const validateReviews = (req, res, next)=>{
+  let{error} =reviewSchema.validate(req.body);
+  if(error){
+    let errMSg = error.details.map((el) =>el.message).join(",");
+    throw new ExpressError(400 ,errMSg );
+  }else{
+    next();
+  }
+};
 
 //  index route
 app.get("/listings", wrapAsync(async (req, res) => {
@@ -57,7 +68,7 @@ app.get("/listings/new", wrapAsync(async (req, res) => {
 //show route
 app.get("/listings/:id",  wrapAsync(async (req, res) => {
   const { id } = req.params;
-  const listing = await Listing.findById(id);
+  const listing = await Listing.findById(id).populate("reviews");
   res.render("./listings/show.ejs", { listing });
 }));
 
@@ -114,6 +125,18 @@ app.delete("/listings/:id", wrapAsync(async (req, res) => {
   console.log(deletedListing);
   res.redirect("/listings");
 }));
+
+// review route
+app.post("/listings/:id/reviews",validateReviews, wrapAsync(async(req,res)=>{
+ let listing = await Listing.findById(req.params.id);
+ let newReview = new Reviews (req.body.review);
+ listing.review.push(newReview);
+ await newReview.save();
+ await listing.save();
+ 
+ res.redirect(`/listings/${listing._id}`);
+})); 
+
 
 app.all("*" , (req, res, next)=>{
   next(new ExpressError(404,"page not found"));

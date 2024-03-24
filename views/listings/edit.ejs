@@ -29,7 +29,7 @@
         <div class="row  offset-2">
               <div class=" mb-3 col-md-4 "  >
                  <label for="price" class="form-label">price</label>
-                 <input name="listing[price]"  value="<%= listing.price %>" class="form-control"  required>
+                 <input name="listing[price]"  value="<%= listing.price.toLocaleString("en-IN") %>" class="form-control"  required>
                  <div class="invalid-feedback">
                   please enter a price.
                 </div>
@@ -53,4 +53,3 @@
       </form>
     </div>
 </div>
-<script src="/js/script.js"></script>
